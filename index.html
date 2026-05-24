@@ -42,17 +42,17 @@
 // ═══════════════════════════════════════
 // API KEYLERİNİ BURAYA YAPIŞTIR
 // ═══════════════════════════════════════
-const GROQ_API_KEY = "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";
-const GEMINI_API_KEY = "AIzaSyD6uL83qnZHYBWauuy1VNSzaYYc6AYsEJ8";
+const GROQ_API_KEY = "BURAYA_GROQ_KEYİNİ_YAPIŞTIR";
+const GEMINI_API_KEY = "BURAYA_GEMINI_KEYİNİ_YAPIŞTIR";
 
 const chatDiv = document.getElementById('chat');
 const userInput = document.getElementById('userInput');
 const badge = document.getElementById('correctionBadge');
 
-function addMessage(role, text, isCorrection = false) {
+function addMessage(role, text) {
   const div = document.createElement('div');
   div.className = `p-4 rounded-xl ${role === 'user' 
-  ? 'bg-white/5 border border-white/10 ml-12 text-[#8a7f72] italic' 
+ ? 'bg-white/5 border border-white/10 ml-12 text-[#8a7f72] italic' 
     : 'bg-[#c0392b]/10 border border-[#c0392b]/20 mr-12'}`;
   div.innerHTML = `<b class="cinzel text-xs tracking-wider ${role === 'user'? 'text-[#8a7f72]' : 'text-[#c0392b]'}">${role === 'user'? 'SEN' : 'CARDINAL'}</b><br>${text}`;
   chatDiv.appendChild(div);
@@ -87,7 +87,7 @@ async function sendMessage() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: 'Sen Cardinal adlı yardımcı bir yapay zekasın. Kısa, net ve Türkçe cevap ver.' },
           { role: 'user', content: message }
@@ -96,6 +96,11 @@ async function sendMessage() {
         max_tokens: 500
       })
     });
+    
+    if (!groqRes.ok) {
+      const err = await groqRes.json();
+      throw new Error(`Groq hatası: ${err.error?.message || groqRes.status}`);
+    }
     
     const groqData = await groqRes.json();
     let finalAnswer = groqData.choices[0].message.content;
@@ -107,11 +112,16 @@ async function sendMessage() {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Sen yan kardinal adlı denetleyici bir yapay zekasın. Ana AI şu cevabı verdi:\n\n"${finalAnswer}"\n\nKullanıcı sorusu: "${message}"\n\nGörevin: Cevapta mantık hatası, yanlış bilgi veya eksik var mı kontrol et. \n\nEğer hata VARSA: Düzeltilmiş tam cevabı yaz. Başka açıklama yapma.\nEğer hata YOKSA: Sadece "DOĞRU" yaz.\n\nCevabın:`
+            text: `Ana AI cevabı: "${finalAnswer}"\nKullanıcı sorusu: "${message}"\n\nBu cevapta hata/eksik varsa düzeltilmiş tam cevabı yaz. Hata YOKSA sadece "DOĞRU" yaz.`
           }]
         }]
       })
     });
+
+    if (!geminiRes.ok) {
+      const err = await geminiRes.json();
+      throw new Error(`Gemini hatası: ${err.error?.message || geminiRes.status}`);
+    }
     
     const geminiData = await geminiRes.json();
     const geminiCheck = geminiData.candidates[0].content.parts[0].text.trim();
@@ -126,11 +136,3 @@ async function sendMessage() {
     
     addMessage('cardinal', finalAnswer);
     
-  } catch (error) {
-    thinking.remove();
-    addMessage('cardinal', 'Hata: ' + error.message);
-  }
-}
-</script>
-</body>
-</html>
