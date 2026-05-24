@@ -8,7 +8,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Crimson+Pro:wght@300;400&display=swap');
   body { font-family: 'Crimson Pro', serif; }
- .cinzel { font-family: 'Cinzel', serif; }
+.cinzel { font-family: 'Cinzel', serif; }
 </style>
 </head>
 <body class="bg-[#070709] text-[#e8e0d5] min-h-screen">
@@ -42,8 +42,8 @@
 // ═══════════════════════════════════════
 // API KEYLERİNİ BURAYA YAPIŞTIR
 // ═══════════════════════════════════════
-const GROQ_API_KEY = "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; // Groq key
-const GEMINI_API_KEY = "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxx"; // Gemini key
+const GROQ_API_KEY = "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";
+const GEMINI_API_KEY = "AIzaSyD6uL83qnZHYBWauuy1VNSzaYYc6AYsEJ8";
 
 const chatDiv = document.getElementById('chat');
 const userInput = document.getElementById('userInput');
@@ -52,7 +52,7 @@ const badge = document.getElementById('correctionBadge');
 function addMessage(role, text, isCorrection = false) {
   const div = document.createElement('div');
   div.className = `p-4 rounded-xl ${role === 'user' 
-   ? 'bg-white/5 border border-white/10 ml-12 text-[#8a7f72] italic' 
+  ? 'bg-white/5 border border-white/10 ml-12 text-[#8a7f72] italic' 
     : 'bg-[#c0392b]/10 border border-[#c0392b]/20 mr-12'}`;
   div.innerHTML = `<b class="cinzel text-xs tracking-wider ${role === 'user'? 'text-[#8a7f72]' : 'text-[#c0392b]'}">${role === 'user'? 'SEN' : 'CARDINAL'}</b><br>${text}`;
   chatDiv.appendChild(div);
@@ -83,7 +83,7 @@ async function sendMessage() {
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${gsk_UQVHI20NBC6pLos8stCcWGdyb3FYBjNv rziMDhzY7hGDL2Zc2iB0}`,
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -101,7 +101,7 @@ async function sendMessage() {
     let finalAnswer = groqData.choices[0].message.content;
     
     // 2. YAN AI - GEMINI KONTROL
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AIzaSyD6uL83qnZHYBWauuy1VNSzaYYc6AYsEJ8}`, {
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
