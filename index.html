@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardinal Dual AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Crimson+Pro:wght@300;400&display=swap');
+  body { font-family: 'Crimson Pro', serif; }
+ .cinzel { font-family: 'Cinzel', serif; }
+</style>
+</head>
+<body class="bg-[#070709] text-[#e8e0d5] min-h-screen">
+
+<div class="max-w-3xl mx-auto p-4 pb-24">
+  <div class="text-center mb-8 mt-6">
+    <h1 class="cinzel text-4xl font-black text-[#c0392b] mb-2">CARDINAL</h1>
+    <p class="text-sm text-[#8a7f72] tracking-[6px]">DUAL AI SYSTEM</p>
+  </div>
+
+  <div id="chat" class="space-y-4 mb-4 min-h-[400px]"></div>
+
+  <div class="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#070709] via-[#070709] to-transparent p-4">
+    <div class="max-w-3xl mx-auto flex gap-2">
+      <input id="userInput" type="text" placeholder="Sorunu yaz..." 
+             class="flex-1 p-3 bg-[#0d0d12] border border-[#c0392b]/30 rounded-xl focus:border-[#c0392b] outline-none"
+             onkeydown="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()" 
+              class="px-6 py-3 bg-[#c0392b] hover:bg-[#e74c3c] rounded-xl font-semibold transition">
+        Gönder
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="correctionBadge" class="fixed top-4 left-4 px-4 py-2 bg-[#c9a84c]/10 border border-[#c9a84c]/30 rounded-full text-[#c9a84c] text-xs tracking-[3px] cinzel opacity-0 transition-opacity duration-500 pointer-events-none">
+  YAN KARDİNAL DÜZELTTİ
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// API KEYLERİNİ BURAYA YAPIŞTIR
+// ═══════════════════════════════════════
+const GROQ_API_KEY = "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; // Groq key
+const GEMINI_API_KEY = "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxx"; // Gemini key
+
+const chatDiv = document.getElementById('chat');
+const userInput = document.getElementById('userInput');
+const badge = document.getElementById('correctionBadge');
+
+function addMessage(role, text, isCorrection = false) {
+  const div = document.createElement('div');
+  div.className = `p-4 rounded-xl ${role === 'user' 
+   ? 'bg-white/5 border border-white/10 ml-12 text-[#8a7f72] italic' 
+    : 'bg-[#c0392b]/10 border border-[#c0392b]/20 mr-12'}`;
+  div.innerHTML = `<b class="cinzel text-xs tracking-wider ${role === 'user'? 'text-[#8a7f72]' : 'text-[#c0392b]'}">${role === 'user'? 'SEN' : 'CARDINAL'}</b><br>${text}`;
+  chatDiv.appendChild(div);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+  return div;
+}
+
+function showBadge() {
+  badge.classList.remove('opacity-0');
+  badge.classList.add('opacity-100');
+  setTimeout(() => {
+    badge.classList.remove('opacity-100');
+    badge.classList.add('opacity-0');
+  }, 3000);
+}
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+  
+  addMessage('user', message);
+  userInput.value = '';
+  
+  const thinking = addMessage('cardinal', 'Düşünüyor...');
+  
+  try {
+    // 1. ANA AI - GROQ
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${gsk_UQVHI20NBC6pLos8stCcWGdyb3FYBjNv rziMDhzY7hGDL2Zc2iB0}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-70b-versatile',
+        messages: [
+          { role: 'system', content: 'Sen Cardinal adlı yardımcı bir yapay zekasın. Kısa, net ve Türkçe cevap ver.' },
+          { role: 'user', content: message }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    });
+    
+    const groqData = await groqRes.json();
+    let finalAnswer = groqData.choices[0].message.content;
+    
+    // 2. YAN AI - GEMINI KONTROL
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AIzaSyD6uL83qnZHYBWauuy1VNSzaYYc6AYsEJ8}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Sen yan kardinal adlı denetleyici bir yapay zekasın. Ana AI şu cevabı verdi:\n\n"${finalAnswer}"\n\nKullanıcı sorusu: "${message}"\n\nGörevin: Cevapta mantık hatası, yanlış bilgi veya eksik var mı kontrol et. \n\nEğer hata VARSA: Düzeltilmiş tam cevabı yaz. Başka açıklama yapma.\nEğer hata YOKSA: Sadece "DOĞRU" yaz.\n\nCevabın:`
+          }]
+        }]
+      })
+    });
+    
+    const geminiData = await geminiRes.json();
+    const geminiCheck = geminiData.candidates[0].content.parts[0].text.trim();
+    
+    thinking.remove();
+    
+    // 3. SONUÇ
+    if (geminiCheck!== 'DOĞRU' &&!geminiCheck.toLowerCase().includes('doğru')) {
+      finalAnswer = geminiCheck;
+      showBadge();
+    }
+    
+    addMessage('cardinal', finalAnswer);
+    
+  } catch (error) {
+    thinking.remove();
+    addMessage('cardinal', 'Hata: ' + error.message);
+  }
+}
+</script>
+</body>
+</html>
