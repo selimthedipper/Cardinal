@@ -42,8 +42,8 @@
 // ═══════════════════════════════════════
 // API KEYLERİNİ BURAYA YAPIŞTIR
 // ═══════════════════════════════════════
-const GROQ_API_KEY = "BURAYA_GROQ_KEYİNİ_YAPIŞTIR";
-const GEMINI_API_KEY = "BURAYA_GEMINI_KEYİNİ_YAPIŞTIR";
+const GROQ_API_KEY = "gsk_Wh4NKJf4Qu1u2XiPWAj3WGdyb3FYKYU 5HZKmg6NwMgH79j7VPHxC";
+const GEMINI_API_KEY = "AIzaSyDQqqc_KNMP-FFF74D8FzDat29jl4QfiUA";
 
 const chatDiv = document.getElementById('chat');
 const userInput = document.getElementById('userInput');
@@ -136,3 +136,11 @@ async function sendMessage() {
     
     addMessage('cardinal', finalAnswer);
     
+  } catch (error) {
+    thinking.remove();
+    addMessage('cardinal', 'Hata: ' + error.message);
+  }
+}
+</script>
+</body>
+</html>
